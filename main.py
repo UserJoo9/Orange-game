@@ -314,12 +314,12 @@ while running:
                 if round < 3:
                     Thread(target=take_rest, daemon=True).start()
 
+    update_all_objects()
+
     if round == 3:
         screen.blit(end_text, end_text_loc)
         pygame.display.update()
         pygame.time.delay(3000)
         running = False
-
-    update_all_objects()
 
 pygame.quit()
