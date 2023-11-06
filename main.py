@@ -307,9 +307,9 @@ while running:
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
-    if not grabbed:
+    if not grabbed and isReady:
         Thread(target=holder, daemon=True).start()
-        if bypass:
+        if bypass and isReady:
             grabbed = True
             if general_value == 1 and not half_cup:
                 reach = 1
