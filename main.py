@@ -4,6 +4,7 @@ from pygame.locals import *
 from threading import Thread
 import serial
 import serial.tools.list_ports
+import random
 
 supportedBoardsModel = ("Arduino Uno", "Arduino Nano", "Silicon Labs CP210x")
 
@@ -52,12 +53,17 @@ next_flag = False
 size = width, height = (700, 700)
 pygame.init()
 pygame.mixer.init()
+bg_sound = pygame.mixer.Sound('bg_music.mp3')
+bg_sound.set_volume(min(1.0, bg_sound.get_volume() / 20))
 squeeze_sound = pygame.mixer.Sound('squezee.mp3')
 nice_sound = pygame.mixer.Sound('احسنت.mp3')
 press_sound = pygame.mixer.Sound('اضغط.mp3')
 continue_sound = pygame.mixer.Sound('اكمل.mp3')
-for s in [squeeze_sound, nice_sound, press_sound, continue_sound]:
-    s.set_volume(min(1.0, s.get_volume() / 8))
+press_again_sound = pygame.mixer.Sound('قم بالضغط مرة اخري.mp3')
+more_sound = pygame.mixer.Sound('اكثر.mp3')
+try_again_sound = pygame.mixer.Sound('حاول تانيا.mp3')
+for s in [press_sound, continue_sound, press_again_sound, more_sound, try_again_sound]:
+    s.set_volume(min(1.0, s.get_volume() / 3))
 
 # set window size
 screen = pygame.display.set_mode(size)
@@ -250,17 +256,12 @@ Thread(target=still_pressed, daemon=True).start()
 
 # 3 secs holder
 def holder():
-    global bypass, press_sound, continue_sound, rest
+    global bypass, press_sound, continue_sound, press_sound, more_sound, try_again_sound, rest, say
     if reach == 0:
         sw = 80
     else:
         sw = 120
     for x in range(sw):
-        if not pygame.mixer.get_busy() and isReady and not rest:
-            if reach == 0:
-                press_sound.play()
-            elif reach == 1:
-                continue_sound.play()
         pygame.time.delay(50)
         if not stillPressed:
             bypass = False
@@ -269,8 +270,40 @@ def holder():
     return
 
 
+def guid_sound():
+    global press_sound, continue_sound, press_again_sound, more_sound, try_again_sound, reach
+    while 1:
+        if isReady and not rest and not pygame.mixer.Channel(0).get_busy():
+            if cup_number == 0 and reach == 0:
+                press_sound.play()
+            elif cup_number == 0 and reach == 1:
+                continue_sound.play()
+            elif cup_number == 1 and reach == 0:
+                press_again_sound.play()
+            elif cup_number == 1 and reach == 1:
+                more_sound.play()
+            elif cup_number == 2 and reach == 0:
+                try_again_sound.play()
+            elif cup_number == 2 and reach == 1:
+                press_sound.play()
+            elif cup_number == 3 and reach == 0:
+                continue_sound.play()
+            elif cup_number == 3 and reach == 1:
+                press_again_sound.play()
+            elif cup_number == 4 and reach == 0:
+                more_sound.play()
+            elif cup_number == 4 and reach == 1:
+                try_again_sound.play()
+        pygame.time.delay(2000)
+
+
+Thread(target=guid_sound, daemon=True).start()
+
 # game core
 while running:
+    if not pygame.mixer.get_busy():
+        pygame.mixer.Channel(1).play(bg_sound)
+
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
