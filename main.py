@@ -271,30 +271,31 @@ def holder():
 
 
 def guid_sound():
-    global press_sound, continue_sound, press_again_sound, more_sound, try_again_sound, reach
+    global press_sound, press_again_sound, reach, general_value
+    say_of_cup = 0
+    tries = 4
+
     while 1:
-        if isReady and not rest and not pygame.mixer.Channel(0).get_busy():
-            if cup_number == 0 and reach == 0:
-                press_sound.play()
-            elif cup_number == 0 and reach == 1:
-                continue_sound.play()
-            elif cup_number == 1 and reach == 0:
-                press_again_sound.play()
-            elif cup_number == 1 and reach == 1:
-                more_sound.play()
-            elif cup_number == 2 and reach == 0:
-                try_again_sound.play()
-            elif cup_number == 2 and reach == 1:
-                press_sound.play()
-            elif cup_number == 3 and reach == 0:
-                continue_sound.play()
-            elif cup_number == 3 and reach == 1:
-                press_again_sound.play()
-            elif cup_number == 4 and reach == 0:
-                more_sound.play()
-            elif cup_number == 4 and reach == 1:
-                try_again_sound.play()
-        pygame.time.delay(2000)
+        if cup_number == say_of_cup:
+            for i in range(tries):
+                if isReady and not rest:
+                    while pygame.mixer.Channel(0).get_busy():
+                        pygame.time.delay(3000)
+                    if reach == 0 and tries > 2 and general_value != 1:
+                        tries -= 1
+                        press_sound.play()
+                    elif reach == 1 and general_value != 2:
+                        tries -= 1
+                        press_again_sound.play()
+
+        if reach == 2:
+            tries = 4
+            say_of_cup += 1
+
+        if cup_number == 5:
+            say_of_cup = 0
+
+        pygame.time.delay(200)
 
 
 Thread(target=guid_sound, daemon=True).start()
