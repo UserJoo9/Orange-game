@@ -58,11 +58,8 @@ bg_sound.set_volume(min(1.0, bg_sound.get_volume() / 20))
 squeeze_sound = pygame.mixer.Sound('squezee.mp3')
 nice_sound = pygame.mixer.Sound('احسنت.mp3')
 press_sound = pygame.mixer.Sound('اضغط.mp3')
-continue_sound = pygame.mixer.Sound('اكمل.mp3')
 press_again_sound = pygame.mixer.Sound('قم بالضغط مرة اخري.mp3')
-more_sound = pygame.mixer.Sound('اكثر.mp3')
-try_again_sound = pygame.mixer.Sound('حاول تانيا.mp3')
-for s in [press_sound, continue_sound, press_again_sound, more_sound, try_again_sound]:
+for s in (press_sound, press_again_sound):
     s.set_volume(min(1.0, s.get_volume() / 3))
 
 # set window size
