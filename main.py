@@ -4,7 +4,6 @@ from pygame.locals import *
 from threading import Thread
 import serial
 import serial.tools.list_ports
-import random
 
 supportedBoardsModel = ("Arduino Uno", "Arduino Nano", "Silicon Labs CP210x")
 
@@ -160,11 +159,10 @@ def update_all_objects():
 
 # move full cup animation and get new empty cup
 def next_cup():
-    global cup_loc, main_object_loc, res_cup, cup, isReady, next_flag, nice_sound, continue_sound, press_sound
+    global cup_loc, main_object_loc, res_cup, cup, isReady, next_flag, nice_sound, press_sound
     isReady = False
     next_flag = True
     press_sound.stop()
-    continue_sound.stop()
     screen.blit(res_finish_cup, finish_cup_loc)
     pygame.display.update()
     nice_sound.play()
@@ -253,7 +251,7 @@ Thread(target=still_pressed, daemon=True).start()
 
 # 3 secs holder
 def holder():
-    global bypass, press_sound, continue_sound, press_sound, more_sound, try_again_sound, rest, say
+    global bypass, press_sound, press_sound, rest
     if reach == 0:
         sw = 80
     else:
