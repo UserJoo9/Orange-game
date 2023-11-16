@@ -6,35 +6,55 @@ from threading import Thread
 import serial
 import serial.tools.list_ports
 
-supportedBoardsModel = ("USB-SERIAL CH340")
+supportedBoardsModel = ("USB-SERIAL CH340", "Silicon Labs CP210x")
+connectedBoard = None
+isConnected = False
 
 
 def start_connection():
-    global links, boardConnected, MCU
+    global links, boardConnected, MCU, connectedBoard, isConnected
     ports = list(serial.tools.list_ports.comports())
     attached = 0
     port = None
     for p in ports:
-        print(p)
         if any(one in p.description for one in supportedBoardsModel):
             attached += 1
             port = p.description
+            connectedBoard = port
     if attached == 1:
         for o in supportedBoardsModel:
             if o in port:
                 com = port.split("(")[-1][:-1]
                 MCU = serial.Serial(port=com, baudrate=9600)
-                MCU.close()
-                MCU.open()
+                isConnected = True
+                try:
+                    MCU.close()
+                    MCU.open()
+                except:
+                    pass
                 boardConnected = True
                 return "Connected"
-    elif attached > 1:
-        return "Attach one MCU only!"
-    else:
-        return "No MCU board attached!"
 
 
 start_connection()
+
+
+def check_connectivity():
+    global isConnected, MCU
+    while 1:
+        pygame.time.delay(100)
+        ports = list(serial.tools.list_ports.comports())
+        isConnected = False
+        for p in ports:
+            if any(one in p.description for one in supportedBoardsModel):
+                isConnected = True
+        if not isConnected:
+            MCU.close()
+            start_connection()
+
+
+Thread(target=check_connectivity, daemon=True).start()
+
 
 # main attributes definition
 cups_levels = ['1.png', '2.png', '3.png']
@@ -246,7 +266,6 @@ def active_press():
             general_value = int(MCU.read().decode().strip())
             if str(general_value).isnumeric():
                 controller_nav = pygame.font.Font(None, 36).render(f"Controller connected", True, (00, 255, 0))
-                print(general_value)
                 if general_value == 1:
                     set_pressure('mid')
                 elif general_value == 2:
@@ -329,7 +348,6 @@ while running:
         if event.type == QUIT:
             running = False
 
-    print(general_value, stillPressed)
     if not grabbed and isReady and not rest:
         Thread(target=holder, daemon=True).start()
         if bypass:
