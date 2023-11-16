@@ -1,11 +1,12 @@
 import os.path
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
 import pygame
 from pygame.locals import *
 from threading import Thread
 import serial
 import serial.tools.list_ports
 
-supportedBoardsModel = ("Arduino Uno", "Arduino Nano", "Silicon Labs CP210x")
+supportedBoardsModel = ("USB-SERIAL CH340")
 
 
 def start_connection():
@@ -14,6 +15,7 @@ def start_connection():
     attached = 0
     port = None
     for p in ports:
+        print(p)
         if any(one in p.description for one in supportedBoardsModel):
             attached += 1
             port = p.description
@@ -124,6 +126,11 @@ controller_nav = pygame.font.Font(None, 35).render(f"Controller connecting..", T
 controller_nav_loc = controller_nav.get_rect()
 controller_nav_loc.center = width / 4 - 10, 680
 
+# pressure state
+pressure_state = pygame.font.Font(None, 35).render(f"Low", True, (0, 0, 255))
+pressure_state_loc = pressure_state.get_rect()
+pressure_state_loc.center = width / 4 - 120, 620
+
 # finish a cup
 finish_cup = pygame.image.load('check.png')
 finish_cup_loc = finish_cup.get_rect()
@@ -154,6 +161,7 @@ def update_all_objects():
         screen.blit(res_round_image, round_image_loc)
         screen.blit(cups_text_surface, cups_text_surface_loc)
         screen.blit(controller_nav, controller_nav_loc)
+        screen.blit(pressure_state, pressure_state_loc)
         pygame.display.update()
 
 
@@ -207,6 +215,16 @@ def ended_orange():
     res_main_object = pygame.transform.scale(main_object, (320, 600))
 
 
+def set_pressure(state):
+    global pressure_state
+    if state == 'low':
+        pressure_state = pygame.font.Font(None, 35).render(f"Low", True, (0, 0, 255))
+    elif state == 'mid':
+        pressure_state = pygame.font.Font(None, 35).render(f"Half normal", True, (0, 255, 0))
+    else:
+        pressure_state = pygame.font.Font(None, 35).render(f"Normal", True, (255, 0, 0))
+
+
 # take rest function
 def take_rest():
     global isReady, rest_text, rest_text_loc, rest
@@ -223,11 +241,18 @@ def take_rest():
 def active_press():
     global stillPressed, MCU, general_value, controller_nav
     while 1:
-        pygame.time.delay(200)
+        pygame.time.delay(50)
         try:
             general_value = int(MCU.read().decode().strip())
             if str(general_value).isnumeric():
                 controller_nav = pygame.font.Font(None, 36).render(f"Controller connected", True, (00, 255, 0))
+                print(general_value)
+                if general_value == 1:
+                    set_pressure('mid')
+                elif general_value == 2:
+                    set_pressure('hei')
+                else:
+                    set_pressure('low')
         except:
             controller_nav = pygame.font.Font(None, 36).render(f"Controller offline!", True, (255, 0, 0))
 
@@ -303,11 +328,13 @@ while running:
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
+
+    print(general_value, stillPressed)
     if not grabbed and isReady and not rest:
         Thread(target=holder, daemon=True).start()
         if bypass:
             grabbed = True
-            if general_value == 1 and not half_cup:
+            if (general_value == 1 or general_value == 2) and not half_cup:
                 reach = 1
                 half_cup = True
                 squezeed_orange()
