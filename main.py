@@ -14,26 +14,18 @@ isConnected = False
 def start_connection():
     global links, boardConnected, MCU, connectedBoard, isConnected
     ports = list(serial.tools.list_ports.comports())
-    attached = 0
-    port = None
     for p in ports:
         if any(one in p.description for one in supportedBoardsModel):
-            attached += 1
             port = p.description
             connectedBoard = port
-    if attached == 1:
-        for o in supportedBoardsModel:
-            if o in port:
-                com = port.split("(")[-1][:-1]
-                MCU = serial.Serial(port=com, baudrate=9600)
-                isConnected = True
-                try:
-                    MCU.close()
-                    MCU.open()
-                except:
-                    pass
-                boardConnected = True
-                return "Connected"
+            com = port.split("(")[-1][:-1]
+            MCU = serial.Serial(port=com, baudrate=9600)
+            isConnected = True
+            if MCU.isOpen():
+                MCU.close()
+            MCU.open()
+            boardConnected = True
+            return "Connected"
 
 
 start_connection()
@@ -42,15 +34,14 @@ start_connection()
 def check_connectivity():
     global isConnected, MCU
     while 1:
+        ports = list(serial.tools.list_ports.comports())
+        for p in ports: print(p.description)
         pygame.time.delay(100)
         ports = list(serial.tools.list_ports.comports())
         isConnected = False
         for p in ports:
             if any(one in p.description for one in supportedBoardsModel):
                 isConnected = True
-        if not isConnected:
-            MCU.close()
-            start_connection()
 
 
 Thread(target=check_connectivity, daemon=True).start()
@@ -273,6 +264,7 @@ def active_press():
                 else:
                     set_pressure('low')
         except:
+            start_connection()
             controller_nav = pygame.font.Font(None, 36).render(f"Controller offline!", True, (255, 0, 0))
 
 
