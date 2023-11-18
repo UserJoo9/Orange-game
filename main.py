@@ -1,4 +1,5 @@
-import os.path
+import os
+import sys
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
 import pygame
 from pygame.locals import *
@@ -47,8 +48,19 @@ def check_connectivity():
 Thread(target=check_connectivity, daemon=True).start()
 
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 # main attributes definition
-cups_levels = ['1.png', '2.png', '3.png']
+cups_levels = [resource_path('1.png'), resource_path('2.png'), resource_path('3.png')]
 general_value = 0
 round = 0
 cup_number = 0
@@ -65,12 +77,12 @@ next_flag = False
 size = width, height = (700, 700)
 pygame.init()
 pygame.mixer.init()
-bg_sound = pygame.mixer.Sound('bg_music.mp3')
+bg_sound = pygame.mixer.Sound(resource_path('bg_music.mp3'))
 bg_sound.set_volume(min(1.0, bg_sound.get_volume() / 20))
-squeeze_sound = pygame.mixer.Sound('squezee.mp3')
-nice_sound = pygame.mixer.Sound('احسنت.mp3')
-press_sound = pygame.mixer.Sound('اضغط.mp3')
-press_again_sound = pygame.mixer.Sound('قم بالضغط مرة اخري.mp3')
+squeeze_sound = pygame.mixer.Sound(resource_path('squezee.mp3'))
+nice_sound = pygame.mixer.Sound(resource_path('احسنت.mp3'))
+press_sound = pygame.mixer.Sound(resource_path('اضغط.mp3'))
+press_again_sound = pygame.mixer.Sound(resource_path('قم بالضغط مرة اخري.mp3'))
 for s in (press_sound, press_again_sound):
     s.set_volume(min(1.0, s.get_volume() / 3))
 
@@ -82,18 +94,19 @@ if os.path.exists('gn.txt'):
     pygame.display.set_caption(open('gn.txt', 'r').read())
 else:
     open('gn.txt', 'w').write('grip strength game')
+    pygame.display.set_caption(open('gn.txt', 'r').read())
 
 # set game window icon
-icon = pygame.image.load('orange.png')
+icon = pygame.image.load(resource_path('orange.png'))
 pygame.display.set_icon(icon)
 
 # background image init
-background = pygame.image.load('bg.jpg')
+background = pygame.image.load(resource_path('bg.png'))
 background_loc = background.get_rect()
 background_loc.center = 350, 300
 
 # main object init (Orange)
-main_object = pygame.image.load('orange.png')
+main_object = pygame.image.load(resource_path('orange.png'))
 main_object_loc = main_object.get_rect()
 main_object_loc.center = width - 170, height / 2
 res_main_object = pygame.transform.scale(main_object, (300, 200))
@@ -104,57 +117,57 @@ cup_loc.center = width - 170, height - 150
 res_cup = pygame.transform.scale(pygame.image.load(cups_levels[0]), (300, 360))
 
 # table image
-table = pygame.image.load('table.png')
+table = pygame.image.load(resource_path('table.png'))
 table_loc = table.get_rect()
 table_loc.center = width / 18, height - 150
 res_table = pygame.transform.scale(table, (1200, 400))
 
 # rounds counter init
-font = pygame.font.Font(None, 60)
+font = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 40)
 text_surface = font.render(f"      {round}", True, (255, 255, 255))
 text_surface_loc = text_surface.get_rect()
-text_surface_loc.center = 5, 40
+text_surface_loc.center = 5, 50
 
 # round counter image
-round_image = pygame.image.load('rounds.png')
+round_image = pygame.image.load(resource_path('rounds.png'))
 round_image_loc = round_image.get_rect()
 round_image_loc.center = 250, 100
 res_round_image = pygame.transform.scale(round_image, (150, 80))
 
 # cups counter init
-cups_text_surface = pygame.font.Font(None, 60).render(f"     {cup_number}", True, (255, 255, 255))
+cups_text_surface = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 40).render(f"     {cup_number}", True, (255, 255, 255))
 cups_text_surface_loc = cups_text_surface.get_rect()
-cups_text_surface_loc.center = 500, 40
+cups_text_surface_loc.center = 500, 50
 
 # cups counter image
-cups_image = pygame.image.load('cups.png')
+cups_image = pygame.image.load(resource_path('cups.png'))
 cups_image_loc = cups_image.get_rect()
 cups_image_loc.center = 740, 100
 res_cups_image = pygame.transform.scale(cups_image, (150, 80))
 
 # controller navigate
-controller_nav = pygame.font.Font(None, 35).render(f"Controller connecting..", True, (255, 140, 0))
+controller_nav = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 35).render(f"Controller connecting..", True, (255, 140, 0))
 controller_nav_loc = controller_nav.get_rect()
-controller_nav_loc.center = width / 4 - 10, 680
+controller_nav_loc.center = width / 4 + 50, 680
 
 # pressure state
-pressure_state = pygame.font.Font(None, 35).render(f"Low", True, (0, 0, 255))
+pressure_state = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 35).render(f"Low", True, (0, 0, 255))
 pressure_state_loc = pressure_state.get_rect()
 pressure_state_loc.center = width / 4 - 120, 620
 
 # finish a cup
-finish_cup = pygame.image.load('check.png')
+finish_cup = pygame.image.load(resource_path('check.png'))
 finish_cup_loc = finish_cup.get_rect()
 finish_cup_loc.center = width / 2 + 50, height - 300
 res_finish_cup = pygame.transform.scale(finish_cup, (400, 400))
 
 # break init (Rest)
-rest_text = pygame.font.Font(None, 150).render(f"Take a rest.", True, (0, 0, 255))
+rest_text = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 100).render(f"Take a rest.", True, (0, 0, 255))
 rest_text_loc = rest_text.get_rect()
 rest_text_loc.center = 350, 350
 
 # endgame init (Win)
-end_text = pygame.font.Font(None, 150).render("Good job", True, (0, 255, 0))
+end_text = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 100).render("Good job", True, (0, 255, 0))
 end_text_loc = end_text.get_rect()
 end_text_loc.center = 350, 350
 
@@ -208,32 +221,32 @@ def next_cup():
 # view orange on screen
 def orange():
     global main_object, res_main_object
-    main_object = pygame.image.load('orange.png')
+    main_object = pygame.image.load(resource_path('orange.png'))
     res_main_object = pygame.transform.scale(main_object, (300, 200))
 
 
 # view squeezed orange on screen
 def squezeed_orange():
     global main_object, res_main_object
-    main_object = pygame.image.load('squezeed.png')
+    main_object = pygame.image.load(resource_path('squezeed.png'))
     res_main_object = pygame.transform.scale(main_object, (320, 600))
 
 
 # view ended orange on screen
 def ended_orange():
     global main_object, res_main_object
-    main_object = pygame.image.load('ended_orange.png')
+    main_object = pygame.image.load(resource_path('ended_orange.png'))
     res_main_object = pygame.transform.scale(main_object, (320, 600))
 
 
 def set_pressure(state):
     global pressure_state
     if state == 'low':
-        pressure_state = pygame.font.Font(None, 35).render(f"Low", True, (0, 0, 255))
+        pressure_state = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 35).render(f"Low", True, (0, 0, 255))
     elif state == 'mid':
-        pressure_state = pygame.font.Font(None, 35).render(f"Half normal", True, (0, 255, 0))
+        pressure_state = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 35).render(f"Half normal", True, (0, 255, 0))
     else:
-        pressure_state = pygame.font.Font(None, 35).render(f"Normal", True, (255, 0, 0))
+        pressure_state = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 35).render(f"Normal", True, (255, 0, 0))
 
 
 # take rest function
@@ -256,7 +269,7 @@ def active_press():
         try:
             general_value = int(MCU.read().decode().strip())
             if str(general_value).isnumeric():
-                controller_nav = pygame.font.Font(None, 36).render(f"Controller connected", True, (00, 255, 0))
+                controller_nav = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 36).render(f"Controller connected", True, (00, 255, 0))
                 if general_value == 1:
                     set_pressure('mid')
                 elif general_value == 2:
@@ -266,7 +279,7 @@ def active_press():
         except:
             if not isConnected:
                 start_connection()
-            controller_nav = pygame.font.Font(None, 36).render(f"Controller offline!", True, (255, 0, 0))
+            controller_nav = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 36).render(f"Controller offline!", True, (255, 0, 0))
 
 
 Thread(target=active_press, daemon=True).start()
