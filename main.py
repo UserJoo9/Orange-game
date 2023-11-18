@@ -6,8 +6,22 @@ from pygame.locals import *
 from threading import Thread
 import serial
 import serial.tools.list_ports
+from tkinter import messagebox
 
-supportedBoardsModel = ("USB-SERIAL CH340", "Silicon Labs CP210x")
+if not os.path.exists("README.txt"):
+    open('README.txt', 'w').write("Change game window name by change 'gn.txt' file content.\n"
+                                  "Add ports or boards 'BUILDS' by update 'cont.txt' file content as hierarchy.")
+if not os.path.exists('cont.txt'):
+    open('cont.txt', 'w').write("USB-SERIAL CH340\n"
+                                "Silicon Labs CP210x")
+try:
+    supportedBoardsModel = open('cont.txt', 'r').read().split("\n")
+    if "" in supportedBoardsModel:
+        messagebox.showerror("Hierarchy error!", "Remove empty lines from 'cont.txt' file content!")
+        exit()
+except:
+    messagebox.showerror("Hierarchy error!", "Adapt or fix the hierarchy of 'cont.txt' file content!")
+    exit()
 connectedBoard = None
 isConnected = False
 
