@@ -24,9 +24,9 @@ def start_connection():
                 MCU = serial.Serial(port=com, baudrate=9600)
                 isConnected = True
                 MCU.close()
+                MCU.open()
             except:
                 pass
-            MCU.open()
             boardConnected = True
             return "Connected"
 
@@ -278,6 +278,10 @@ def active_press():
                     set_pressure('low')
         except:
             if not isConnected:
+                try:
+                    MCU.close()
+                except:
+                    pass
                 start_connection()
             controller_nav = pygame.font.Font(resource_path('alfont_com_AA-TYPO.otf'), 36).render(f"Controller offline!", True, (255, 0, 0))
 
